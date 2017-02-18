@@ -39,15 +39,16 @@ import Guide.Types
 import Guide.Utils
 import Guide.View
 
+type GuideM res = SpockM () GuideData ServerState res
 
-methods :: SpockM () () ServerState ()
+methods :: GuideM ()
 methods = do
   renderMethods
   setMethods
   addMethods
   otherMethods
 
-renderMethods :: SpockM () () ServerState ()
+renderMethods :: GuideM ()
 renderMethods = Spock.subcomponent "render" $ do
   -- Notes for a category
   Spock.get (categoryVar <//> "notes") $ \catId -> do
@@ -79,7 +80,7 @@ renderMethods = Spock.subcomponent "render" $ do
     category <- dbQuery (GetCategoryByItem itemId)
     lucidIO $ renderItemNotes category item
 
-setMethods :: SpockM () () ServerState ()
+setMethods :: GuideM ()
 setMethods = Spock.subcomponent "set" $ do
   Spock.post (categoryVar <//> "info") $ \catId -> do
     -- TODO: [easy] add a cross-link saying where the form is handled in the
@@ -255,7 +256,7 @@ setMethods = Spock.subcomponent "set" $ do
           ("modified" :: Text, modified),
           ("merged" :: Text, merge original content' modified)]
 
-addMethods :: SpockM () () ServerState ()
+addMethods :: GuideM ()
 addMethods = Spock.subcomponent "add" $ do
   -- New category
   Spock.post "category" $ do
@@ -309,7 +310,7 @@ addMethods = Spock.subcomponent "add" $ do
     addEdit edit
     lucidIO $ renderTrait itemId newTrait
 
-otherMethods :: SpockM () () ServerState ()
+otherMethods :: GuideM ()
 otherMethods = do
   -- Moving things
   Spock.subcomponent "move" $ do
@@ -368,7 +369,7 @@ otherMethods = do
         Atom.feedEntries = entries,
         Atom.feedLinks   = [Atom.nullLink feedUrl] }
 
-adminMethods :: SpockM () () ServerState ()
+adminMethods :: SpockM () GuideData ServerState ()
 adminMethods = Spock.subcomponent "admin" $ do
   -- Accept an edit
   Spock.post ("edit" <//> var <//> "accept") $ \n -> do
